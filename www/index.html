@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>10 SECONDS</title>
+<style>
+:root{--bg:#0b0d12;--panel:#121722;--text:#f7f8fb;--muted:#8e97a8;--accent:#7c5cff;--good:#38e29b;--bad:#ff4d6d;--gold:#ffd166}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+body{display:flex;justify-content:center}
+button{font:inherit}
+#app{width:min(100%,520px);height:100%;position:relative;background:radial-gradient(circle at 50% 0,#171b2c 0,#0b0d12 42%);overflow:hidden}
+.screen{position:absolute;inset:0;display:none;padding:env(safe-area-inset-top) 20px env(safe-area-inset-bottom);flex-direction:column}
+.screen.active{display:flex}
+.center{align-items:center;justify-content:center;text-align:center}
+.logo{font-weight:1000;font-size:clamp(46px,13vw,76px);line-height:.82;letter-spacing:-.07em}
+.logo span{color:var(--accent)}
+.tag{margin-top:14px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+.btn{border:0;border-radius:18px;padding:16px 22px;font-weight:900;color:white;background:var(--accent);box-shadow:0 10px 28px #7c5cff33;cursor:pointer}
+.btn:active{transform:scale(.98)}
+.btn.secondary{background:#1a2030;box-shadow:none}
+.btn.ghost{background:transparent;border:1px solid #2b3345;box-shadow:none}
+.home-actions{width:100%;max-width:320px;margin-top:34px;display:grid;gap:11px}
+.stats{display:flex;gap:8px;margin-top:28px}
+.pill{background:#121722;border:1px solid #232b3b;border-radius:999px;padding:9px 13px;font-size:12px;font-weight:800;color:#b8c0cf}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding-top:16px;min-height:74px}
+.score{font-size:28px;font-weight:1000}
+.small{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.timerWrap{padding:8px 0 14px}
+.timerTrack{height:8px;background:#202636;border-radius:99px;overflow:hidden}
+#timerBar{height:100%;width:100%;background:var(--accent);transition:width .05s linear}
+.challenge{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px 4px 20px}
+.challengeTitle{font-size:13px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px}
+.prompt{font-size:clamp(26px,7vw,40px);font-weight:1000;line-height:1.05;max-width:440px}
+.targetArea{width:100%;max-width:430px;margin-top:24px}
+.grid{display:grid;gap:10px}
+.cell{aspect-ratio:1;border:0;border-radius:16px;background:#20283a;color:white;font-weight:1000;cursor:pointer;box-shadow:inset 0 -4px 0 #00000022}
+.cell.good{background:var(--good)}
+.cell.bad{background:var(--bad)}
+.cell.yellow{background:#ffd166;color:#151515}
+.cell.blue{background:#4da3ff}
+.cell.purple{background:#9b6cff}
+.cell.correct{outline:4px solid #fff;outline-offset:2px}
+.circle{width:72px;height:72px;border-radius:50%;border:0;background:var(--accent);box-shadow:0 14px 30px #7c5cff55;cursor:pointer}
+.options{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.bigInput{width:100%;padding:18px;border-radius:16px;border:1px solid #30384a;background:#111722;color:#fff;text-align:center;font-size:28px;font-weight:900;outline:none}
+.feedback{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);pointer-events:none;font-size:42px;font-weight:1000;opacity:0}
+.feedback.show{animation:pop .55s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-50%) scale(.7)}25%{opacity:1;transform:translateY(-50%) scale(1.05)}100%{opacity:0;transform:translateY(-50%) scale(1)}}
+.resultScore{font-size:64px;font-weight:1000;letter-spacing:-.06em}
+.resultLine{color:var(--muted);margin:5px 0 24px;font-weight:700}
+.resultActions{width:100%;max-width:330px;display:grid;gap:10px}
+.coin{color:var(--gold)}
+.modal{position:absolute;inset:0;background:#05070bb8;display:none;align-items:flex-end;z-index:20}
+.modal.open{display:flex}
+.sheet{width:100%;background:#111722;border:1px solid #283145;border-bottom:0;border-radius:26px 26px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{margin:0 0 8px}
+.sheet p{color:var(--muted);line-height:1.5}
+.row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #242b39}
+.badge{padding:7px 10px;border-radius:999px;background:#1c2433;color:#bfc8d7;font-size:11px;font-weight:900}
+.footer{margin-top:auto;padding:10px 0 18px;color:#687185;font-size:10px;text-align:center}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="home" class="screen active center">
+    <div class="logo">10<span>SEC</span></div>
+    <div class="tag">Think fast. Don't blink.</div>
+    <div class="stats">
+      <div class="pill">BEST <b id="bestHome">0</b></div>
+      <div class="pill">COINS <b class="coin" id="coinsHome">0</b></div>
+    </div>
+    <div class="home-actions">
+      <button class="btn" id="playBtn">TAP TO PLAY</button>
+      <button class="btn secondary" id="dailyBtn">DAILY CHALLENGE</button>
+      <button class="btn ghost" id="shopBtn">SHOP</button>
+    </div>
+    <div class="footer">MVP v0.1 • Offline prototype • Ads are placeholders</div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="topbar">
+      <div><div class="small">Score</div><div class="score" id="score">0</div></div>
+      <div style="text-align:right"><div class="small">Lives</div><div id="lives">❤️❤️❤️</div></div>
+    </div>
+    <div class="timerWrap"><div class="timerTrack"><div id="timerBar"></div></div></div>
+    <div class="challenge">
+      <div class="challengeTitle" id="challengeLabel">Challenge 1</div>
+      <div class="prompt" id="prompt"></div>
+      <div class="targetArea" id="targetArea"></div>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </section>
+
+  <section id="result" class="screen center">
+    <div class="small">Game over</div>
+    <div class="resultScore" id="finalScore">0</div>
+    <div class="resultLine" id="resultLine">Can you beat it?</div>
+    <div class="resultActions">
+      <button class="btn" id="againBtn">PLAY AGAIN</button>
+      <button class="btn secondary" id="reviveBtn">WATCH AD • REVIVE</button>
+      <button class="btn ghost" id="homeBtn">HOME</button>
+    </div>
+  </section>
+
+  <div id="shopModal" class="modal">
+    <div class="sheet">
+      <h2>Shop</h2>
+      <p>Cosmetics are included in the MVP. Real App Store / Google Play purchases can be connected later.</p>
+      <div class="row"><span>Remove Ads</span><span class="badge">$2.99</span></div>
+      <div class="row"><span>Neon Theme</span><span class="badge coin">250 coins</span></div>
+      <div class="row"><span>Minimal Theme</span><span class="badge coin">250 coins</span></div>
+      <button class="btn" style="width:100%;margin-top:18px" id="closeShop">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const screens = ['home','game','result'];
+  const state = {
+    score:0, best:+localStorage.getItem('best')||0, coins:+localStorage.getItem('coins')||0,
+    lives:3, challenge:0, timer:null, deadline:0, daily:false, revived:false
+  };
+  const challenges = [
+    {type:'tapColor', name:'DON’T TOUCH RED', prompt:'Tap every green tile. Avoid red.', setup(){return null}},
+    {type:'odd', name:'FIND THE ODD ONE', prompt:'Tap the tile that is different.', setup(){return null}},
+    {type:'count', name:'COUNT FAST', prompt:'How many circles are there?', setup(){return null}},
+    {type:'sequence', name:'REMEMBER', prompt:'Remember the sequence.', setup(){return null}},
+    {type:'math', name:'QUICK MATH', prompt:'Solve it before time runs out.', setup(){return null}},
+    {type:'smallest', name:'SMALLEST', prompt:'Tap the smallest circle.', setup(){return null}},
+    {type:'largest', name:'LARGEST', prompt:'Tap the largest circle.', setup(){return null}},
+    {type:'reaction', name:'REACTION', prompt:'Tap the circle as soon as it appears.', setup(){return null}},
+    {type:'reverse', name:'REVERSE', prompt:'Tap numbers from 5 to 1.', setup(){return null}},
+    {type:'match', name:'MATCH', prompt:'Tap the matching color.', setup(){return null}},
+    {type:'pattern', name:'PATTERN', prompt:'Complete the pattern.', setup(){return null}},
+    {type:'memoryGrid', name:'MEMORY GRID', prompt:'Tap the highlighted cells.', setup(){return null}},
+    {type:'truefalse', name:'TRUE OR FALSE', prompt:'Is the statement true?', setup(){return null}},
+    {type:'target', name:'TARGET', prompt:'Tap the target.', setup(){return null}},
+    {type:'avoid', name:'AVOID', prompt:'Tap only blue. Red is a trap.', setup(){return null}},
+    {type:'sort', name:'SORT', prompt:'Tap the numbers from low to high.', setup(){return null}},
+    {type:'oddText', name:'SPOT THE WORD', prompt:'Tap the word that breaks the rule.', setup(){return null}},
+    {type:'colorWord', name:'COLOR WORD', prompt:'Tap the tile whose COLOR matches the word.', setup(){return null}},
+    {type:'sum', name:'SUM IT', prompt:'Tap the number that makes the total.', setup(){return null}},
+    {type:'final', name:'FINAL TEST', prompt:'Fast. Accurate. No excuses.', setup(){return null}}
+  ];
+  const colors = ['good','yellow','blue','purple'];
+
+  function show(id){screens.forEach(s=>$(s).classList.toggle('active',s===id))}
+  function save(){localStorage.setItem('best',state.best);localStorage.setItem('coins',state.coins)}
+  function updateHome(){$('bestHome').textContent=state.best;$('coinsHome').textContent=state.coins}
+  function rand(n){return Math.floor(Math.random()*n)}
+  function shuffle(a){for(let i=a.length-1;i>0;i--){let j=rand(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+  function clearTarget(){ $('targetArea').innerHTML=''; }
+  function setGrid(n=9){const g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns=`repeat(${Math.sqrt(n)},1fr)`;return g}
+  function feedback(ok){const f=$('feedback');f.textContent=ok?'✓':'✕';f.style.color=ok?'var(--good)':'var(--bad)';f.className='feedback show';setTimeout(()=>f.className='feedback',500)}
+  function answer(ok){if(!ok){feedback(false);loseLife();return} feedback(true); state.score += 100 + state.challenge*10; state.coins += 5; nextChallenge()}
+  function loseLife(){state.lives--;renderLives();if(state.lives<=0)endGame();else nextChallenge()}
+  function renderLives(){$('lives').textContent='❤️'.repeat(state.lives)+'🖤'.repeat(3-state.lives)}
+  function startGame(daily=false){
+    state.score=0;state.lives=3;state.challenge=0;state.daily=daily;state.revived=false;
+    $('score').textContent='0';renderLives();show('game');nextChallenge();
+  }
+  function endGame(){
+    clearInterval(state.timer);
+    if(state.score>state.best)state.best=state.score;
+    save();updateHome();
+    $('finalScore').textContent=state.score;
+    $('resultLine').textContent=state.score===state.best?'NEW BEST!':'Best: '+state.best;
+    $('reviveBtn').classList.toggle('hidden',state.revived);
+    show('result');
+  }
+  function startTimer(seconds=10){
+    clearInterval(state.timer);state.deadline=Date.now()+seconds*1000;
+    const tick=()=>{const left=Math.max(0,state.deadline-Date.now());$('timerBar').style.width=(left/(seconds*1000)*100)+'%';if(left<=0){clearInterval(state.timer);loseLife()}};
+    state.timer=setInterval(tick,50);tick();
+  }
+  function nextChallenge(){
+    clearInterval(state.timer);clearTarget();state.challenge++;
+    const c=challenges[(state.challenge-1)%challenges.length];
+    $('challengeLabel').textContent=`Challenge ${state.challenge} • ${c.name}`;
+    $('prompt').textContent=c.prompt;
+    $('score').textContent=state.score;
+    renderChallenge(c.type);
+    startTimer(state.challenge<6?10:Math.max(4.5,10-state.challenge*.08));
+  }
+  function button(text, cls='cell'){const b=document.createElement('button');b.className=cls;b.textContent=text;return b}
+  function renderChallenge(type){
+    const a=$('targetArea');
+    if(type==='tapColor'||type==='avoid'){
+      const g=setGrid(9);for(let i=0;i<9;i++){let b=button('');b.className='cell '+(Math.random()<.3?'bad':'good');b.onclick=()=>answer(b.classList.contains('good'));g.appendChild(b)}a.appendChild(g);return;
+    }
+    if(type==='odd'){
+      const g=setGrid(9), odd=rand(9);for(let i=0;i<9;i++){let b=button('');b.className='cell '+(i===odd?'yellow':'blue');b.onclick=()=>answer(i===odd);g.appendChild(b)}a.appendChild(g);return;
+    }
+    if(type==='count'){
+      const n=3+rand(6), wrap=document.createElement('div');wrap.style.cssText='display:flex;gap:12px;justify-content:center;flex-wrap:wrap';for(let i=0;i<n;i++){let s=document.createElement('div');s.className='circle';s.style.width=s.style.height='42px';wrap.appendChild(s)}
+      a.appendChild(wrap);const opts=shuffle([n,n+1,n-1,n+2]);const o=document.createElement('div');o.className='options';opts.forEach(x=>{let b=button(x,'btn secondary');b.onclick=()=>answer(x===n);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='sequence'){
+      const seq=shuffle([1,2,3,4,5]).slice(0,4), p=document.createElement('div');p.style.cssText='font-size:42px;font-weight:1000;letter-spacing:8px';p.textContent=seq.join(' ');a.appendChild(p);
+      setTimeout(()=>{p.textContent='? ? ? ?';const o=document.createElement('div');o.className='options';shuffle(seq.slice()).forEach(x=>{let b=button(x,'btn secondary');b.onclick=()=>answer(x===seq[0]);o.appendChild(b)});a.appendChild(o)},1800);return;
+    }
+    if(type==='math'){
+      const x=5+rand(20),y=2+rand(15),z=x+y, p=document.createElement('div');p.className='prompt';p.textContent=`${x} + ${y} = ?`;a.appendChild(p);const o=document.createElement('div');o.className='options';shuffle([z,z+1,z-1,z+3]).forEach(v=>{let b=button(v,'btn secondary');b.onclick=()=>answer(v===z);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='smallest'||type==='largest'){
+      const sizes=[36,50,64,78], target=type==='smallest'?0:3, o=document.createElement('div');o.style.cssText='display:flex;gap:16px;justify-content:center;align-items:center';sizes.forEach((s,i)=>{let b=button('');b.className='circle';b.style.width=b.style.height=s+'px';b.onclick=()=>answer(i===target);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='reaction'){
+      const area=document.createElement('div');area.style.cssText='height:220px;position:relative;width:100%';a.appendChild(area);setTimeout(()=>{const b=button('','circle');b.style.position='absolute';b.style.left=(10+rand(75))+'%';b.style.top=(10+rand(70))+'%';b.onclick=()=>answer(true);area.appendChild(b)},700+rand(1800));return;
+    }
+    if(type==='reverse'||type==='sort'){
+      const nums=shuffle([1,2,3,4,5]), needed=type==='reverse'?[5,4,3,2,1]:[1,2,3,4,5];let idx=0,o=document.createElement('div');o.className='options';nums.forEach(v=>{let b=button(v,'btn secondary');b.onclick=()=>{if(v===needed[idx]){idx++;b.disabled=true;if(idx===needed.length)answer(true)}else answer(false)};o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='match'){
+      const target=colors[rand(colors.length)], p=document.createElement('div');p.className='prompt';p.textContent='MATCH THE COLOR';a.appendChild(p);const o=document.createElement('div');o.className='options';colors.forEach(c=>{let b=button('',`cell ${c}`);b.style.height='100px';b.onclick=()=>answer(c===target);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='pattern'){
+      const seq=['●','■','●','■','●','?'], p=document.createElement('div');p.style.cssText='font-size:54px;font-weight:1000;letter-spacing:12px';p.textContent=seq.join(' ');a.appendChild(p);const o=document.createElement('div');o.className='options';['●','■','▲','◆'].forEach(v=>{let b=button(v,'btn secondary');b.onclick=()=>answer(v==='■');o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='memoryGrid'){
+      const g=setGrid(9), target=rand(9);for(let i=0;i<9;i++){let b=button('');b.className='cell';if(i===target)b.classList.add('yellow');b.onclick=()=>answer(i===target);g.appendChild(b)}a.appendChild(g);setTimeout(()=>{[...g.children].forEach(b=>b.classList.remove('yellow'))},900);return;
+    }
+    if(type==='truefalse'){
+      const x=3+rand(9),y=2+rand(9),truth=Math.random()>.5, shown=truth?x+y:x+y+1;const p=document.createElement('div');p.className='prompt';p.textContent=`${x} + ${y} = ${shown}`;a.appendChild(p);const o=document.createElement('div');o.className='options';['TRUE','FALSE'].forEach(v=>{let b=button(v,'btn secondary');b.onclick=()=>answer((v==='TRUE')===truth);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='target'){
+      const area=document.createElement('div');area.style.cssText='height:240px;position:relative;width:100%';a.appendChild(area);for(let i=0;i<10;i++){let b=button('');b.className='circle';b.style.position='absolute';b.style.width=b.style.height='44px';b.style.left=(5+rand(85))+'%';b.style.top=(5+rand(80))+'%';b.onclick=()=>answer(i===0);area.appendChild(b)}return;
+    }
+    if(type==='oddText'){
+      const words=['FAST','FAST','FAST','FATS'],o=document.createElement('div');o.className='options';shuffle(words.map((w,i)=>({w,i}))).forEach(x=>{let b=button(x.w,'btn secondary');b.onclick=()=>answer(x.w==='FATS');o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='colorWord'){
+      const data=[['RED','bad'],['BLUE','blue'],['YELLOW','yellow'],['PURPLE','purple']], target=data[rand(data.length)],o=document.createElement('div');o.className='options';shuffle(data).forEach(d=>{let b=button(d[0],`cell ${d[1]}`);b.style.height='90px';b.onclick=()=>answer(d[1]===target[1]);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='sum'){
+      const target=10+rand(10), x=1+rand(target-1), y=target-x,o=document.createElement('div');o.className='options';shuffle([x+y,x+y+1,x+y-1,target]).forEach(v=>{let b=button(v,'btn secondary');b.onclick=()=>answer(v===target);o.appendChild(b)});a.appendChild(o);return;
+    }
+    if(type==='final'){
+      const target=rand(4),g=setGrid(4);for(let i=0;i<4;i++){let b=button(['1','2','3','4'][i],'cell '+colors[i]);b.onclick=()=>answer(i===target);g.appendChild(b)}a.appendChild(g);return;
+    }
+  }
+
+  $('playBtn').onclick=()=>startGame(false);
+  $('dailyBtn').onclick=()=>startGame(true);
+  $('againBtn').onclick=()=>startGame(false);
+  $('homeBtn').onclick=()=>{updateHome();show('home')};
+  $('reviveBtn').onclick=()=>{state.revived=true;state.lives=1;renderLives();show('game');nextChallenge()};
+  $('shopBtn').onclick=()=>$('shopModal').classList.add('open');
+  $('closeShop').onclick=()=>$('shopModal').classList.remove('open');
+  $('shopModal').onclick=e=>{if(e.target.id==='shopModal')$('shopModal').classList.remove('open')};
+  updateHome();
+})();
+</script>
+</body>
+</html>

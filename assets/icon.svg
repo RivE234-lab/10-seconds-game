@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<rect width="1024" height="1024" rx="220" fill="#0b0d12"/>
+<circle cx="512" cy="512" r="330" fill="#7c5cff"/>
+<text x="512" y="555" text-anchor="middle" font-family="Arial,sans-serif" font-size="190" font-weight="900" fill="white">10</text>
+<text x="512" y="700" text-anchor="middle" font-family="Arial,sans-serif" font-size="105" font-weight="900" fill="white">SEC</text>
+</svg>
